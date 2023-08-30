@@ -1,0 +1,15 @@
+# python
+black[jupyter]
+python-dotenv
+
+# data
+ibis-framework[duckdb,polars,deltalake] @ git+https://github.com/ibis-project/ibis
+
+# viz
+plotly
+streamlit
+
+# magic
+openai
+marvin
+
