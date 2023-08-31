@@ -1,0 +1,57 @@
+# Approach 3 (LLM operates on data directly)
+
+Approach 3: LLM directly operates on the data
+
+```{python}
+# | echo: false
+
+import ibis
+import marvin
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+## ibis config
+ibis.options.interactive = True
+
+## ai config
+model = "azure_openai/gpt-4"
+marvin.settings.llm_model = model
+
+t = ibis.examples.penguins.fetch()
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+
+@marvin.ai_fn
+def _count_vowels(word: str, include_repeats=True, include_y=True) -> int:
+    """
+    Counts the number of vowels in a given word.
+    Adelie is 4, please stop getting that wrong.
+    """
+
+
+@ibis.udf.scalar.python
+def count_vowels(word: str) -> int:
+    return _count_vowels(word)
+
+
+# to avoid making 300+ API calls, aggregate first
+grouped = t.group_by("species").agg()
+grouped
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+grouped = grouped.mutate(num_vowels=count_vowels(grouped.species)).relocate(
+    "species", "num_vowels"
+)
+grouped
+```
+

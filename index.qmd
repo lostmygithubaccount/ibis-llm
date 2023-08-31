@@ -1,0 +1,61 @@
+# Ibis + UDFs + LLMs
+
+This covers our 3 approaches for Ibis + LLMs using UDFs.
+
+## Ibis + Marvin = magic
+
+`requirements.txt`:
+
+```
+# python
+black[jupyter]
+python-dotenv
+
+# data
+ibis-framework[duckdb,polars,deltalake]
+
+# magic
+openai
+marvin
+```
+
+## data
+
+penguins data:
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+import ibis
+import marvin
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+## ibis config
+ibis.options.interactive = True
+
+## ai config
+model = "azure_openai/gpt-4"
+marvin.settings.llm_model = model
+
+t = ibis.examples.penguins.fetch()
+t
+```
+
+# approaches
+
+## Approach 1
+
+See [approach 1](approach1.qmd).
+
+## Approach 2
+
+See [approach 2](approach2.qmd).
+
+## Approach 3
+
+See [approach 3](approach3.qmd).
+

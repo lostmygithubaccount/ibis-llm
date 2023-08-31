@@ -1,0 +1,65 @@
+# Approach 2 (LLM writes a UDF)
+
+Approach 2: LLM creates a deterministic UDF
+
+```{python}
+# | echo: false
+
+import ibis
+import marvin
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+## ibis config
+ibis.options.interactive = True
+
+## ai config
+model = "azure_openai/gpt-4"
+marvin.settings.llm_model = model
+
+t = ibis.examples.penguins.fetch()
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+
+@marvin.ai_fn
+def _gen_python_str(description: str) -> str:
+    """
+    Creates a Python function for the specified
+    description. Keeps it simple, type annotated,
+    and using only the standard library.
+    """
+
+
+def gen_python_str(description: str) -> str:
+    return f"""
+@ibis.udf.scalar.python
+{_gen_python_str(description)}
+""".strip()
+
+
+py = gen_python_str(
+    "count the number of vowels (including repeats and y as a vowel) in a given input string. name the function 'count_vowels'"
+)
+print(py)
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+exec(py)
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+t.mutate(num_vowels=count_vowels(t.species)).relocate("species", "num_vowels")
+```
+

@@ -1,0 +1,115 @@
+# Approach 1 (LLM writes the SQL query)
+
+Approach 1: LLM writes the SQL query
+
+```{python}
+# | echo: false
+
+import ibis
+import marvin
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+## ibis config
+ibis.options.interactive = True
+
+## ai config
+model = "azure_openai/gpt-4"
+marvin.settings.llm_model = model
+
+t = ibis.examples.penguins.fetch()
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+
+@marvin.ai_fn
+def _gen_sql_str(table_name: str, schema: str, description: str) -> str:
+    """
+    Generates the required SQL (SELECT statements only)
+    string to achieve the described goal for a table of the given table_name and schema.
+    """
+
+
+def gen_sql_str(table, description: str) -> str:
+    return _gen_sql_str(table.get_name(), str(table.schema()), description).strip(";")
+
+
+sql = gen_sql_str(t, "get the combinations of islands and species")
+sql
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+t.sql(sql)
+``` 
+
+## How far can this go?
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+sql = gen_sql_str(
+    t,
+    "get the combinations of islands and species, and their count, and the mean of each of the numeric measurement columns (not year); order by the count descnding",
+)
+t.sql(sql)
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+sql
+```
+
+## Something more complicated
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+
+species_set = set(t.species.to_pandas())
+species_set
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+sql = gen_sql_str(
+    t,
+    f"add a new column that counts the number of vowels in the species name (inccluding duplicates and y as a vowel), with that new column at the front next to species. it only needs to work for {species_set} so you can hardcode the values if you want. Adelie is 4.",
+)
+sql
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+t.sql(sql)
+``` 
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+t.sql(sql).filter(ibis._["species"] == "Chinstrap")
+```
+
+```{python}
+# | echo: true
+# | output-location: fragment
+
+t.sql(sql).filter(ibis._["species"] == "Gentoo")
+```
+

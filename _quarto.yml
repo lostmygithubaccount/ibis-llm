@@ -1,0 +1,15 @@
+project:
+  type: book
+
+book:
+  title: "Ibis + UDFs + LLMs"
+  author: "Cody"
+  date: "12/32/2023"
+  chapters:
+    - index.qmd
+    - approach1.qmd
+    - approach2.qmd
+    - approach3.qmd
+format:
+  html:
+    theme: flatly
